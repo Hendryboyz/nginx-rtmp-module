@@ -813,8 +813,11 @@ ngx_rtmp_notify_parse_http_retcode(ngx_rtmp_session_t *s,
         if (b->last - b->pos > n) {
             c = b->pos[n];
             if (c >= (u_char)'0' && c <= (u_char)'9') {
+                int c2 = (int)(b->pos[n + 1] - '0');
+                int c3 = (int)(b->pos[n + 2] - '0');
+                int httpCode = ((int)(c - '0')) * 100 + c2 * 10 + c3;
                 ngx_log_debug1(NGX_LOG_DEBUG_RTMP, s->connection->log, 0,
-                    "notify: HTTP retcode: %dxx", (int)(c - '0'));
+                    "notify: HTTP retcode: %dxx", httpCode);
                 switch (c) {
                     case (u_char) '2':
                         return NGX_OK;
@@ -892,7 +895,6 @@ ngx_rtmp_notify_parse_http_header(ngx_rtmp_session_t *s,
 
                     n = 0;
                     state = parse_name;
-                    /* fall through */
 
                 case parse_name:
                     switch (c) {
@@ -920,7 +922,6 @@ ngx_rtmp_notify_parse_http_header(ngx_rtmp_session_t *s,
                         break;
                     }
                     state = parse_value;
-                    /* fall through */
 
                 case parse_value:
                     if (c == '\n') {
